@@ -10,13 +10,21 @@
   "scripts": {
     "start": "node index.js",
     "start:http": "MCP_HTTP_MODE=true node index.js",
+    "start:https": "MCP_HTTPS_MODE=true node index.js",
+    "start:subdomain": "DOMAIN=mcp.fetchserp.com MCP_HTTPS_MODE=true node index.js",
+    "start:local": "USE_SELF_SIGNED=true MCP_HTTPS_MODE=true node index.js",
+    "setup": "./setup-subdomain.sh",
     "dev": "node --watch index.js",
     "dev:http": "MCP_HTTP_MODE=true node --watch index.js",
+    "dev:https": "MCP_HTTPS_MODE=true node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "express": "^4.21.2",
+    "fs": "^0.0.1-security",
+    "greenlock-express": "^4.0.3",
+    "https": "^1.0.0",
     "node-fetch": "^3.3.2"
   },
   "engines": {

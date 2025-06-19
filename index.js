@@ -11,6 +11,10 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import fetch from 'node-fetch';
 import express from 'express';
+import greenlockExpress from 'greenlock-express';
+import https from 'https';
+import fs from 'fs';
+import { execSync } from 'child_process';
 
 const API_BASE_URL = 'https://www.fetchserp.com';
 
@@ -524,8 +528,7 @@ class FetchSERPServer {
   }
 
   async makeRequest(endpoint, method = 'GET', params = {}, body = null, token = null) {
-    // For HTTP mode, use the token passed from the request
-    // For stdio mode, use environment variable
+    // Use the token passed from the request, fallback to environment variable
     const fetchserpToken = token || process.env.FETCHSERP_API_TOKEN;
     
     if (!fetchserpToken) {
@@ -650,24 +653,65 @@ class FetchSERPServer {
     }
   }
 
-  async run() {
-    // Check if we should run as HTTP server or stdio
-    const useHttp = process.env.MCP_HTTP_MODE === 'true';
-    
-    if (useHttp) {
-      // HTTP mode with Express
-      const app = express();
-      const port = process.env.PORT || 8000;
+  // Helper function to create self-signed certificates for local development
+  createSelfSignedCerts(domain) {
+    const certDir = './certs';
+    const keyFile = `${certDir}/key.pem`;
+    const certFile = `${certDir}/cert.pem`;
 
+    // Check if certificates already exist
+    if (fs.existsSync(keyFile) && fs.existsSync(certFile)) {
+      console.log('Using existing self-signed certificates');
+      return { keyFile, certFile };
+    }
+
+    // Create certs directory if it doesn't exist
+    if (!fs.existsSync(certDir)) {
+      fs.mkdirSync(certDir, { recursive: true });
+    }
+
+    console.log('Creating self-signed certificates for local development...');
+    
+    try {
+      // Generate self-signed certificate
+      execSync(`openssl req -x509 -newkey rsa:4096 -keyout ${keyFile} -out ${certFile} -days 365 -nodes -subj "/C=US/ST=State/L=City/O=Organization/CN=${domain}"`, { stdio: 'inherit' });
+      console.log('✅ Self-signed certificates created successfully');
+      return { keyFile, certFile };
+    } catch (error) {
+      console.error('❌ Failed to create self-signed certificates:', error.message);
+      console.error('Make sure OpenSSL is installed on your system');
+      throw error;
+    }
+  }
+
+  async run() {
+    // Check if we should run as HTTPS server or stdio
+    const useHttps = process.env.MCP_HTTPS_MODE === 'true';
+    
+    if (useHttps) {
+      // HTTPS only mode with Let's Encrypt or self-signed certificates
+      const httpsPort = process.env.HTTPS_PORT || 8000;
+      const domain = process.env.DOMAIN || 'mcp.fetchserp.com';
+      const staging = process.env.LE_STAGING === 'true'; // Use staging for testing
+      const email = process.env.LE_EMAIL || 'admin@fetchserp.com';
+      const useSelfSigned = process.env.USE_SELF_SIGNED === 'true' || domain === 'localhost';
+
+      console.log('Starting HTTPS server...');
+      console.log(`Domain: ${domain}`);
+      console.log(`Port: ${httpsPort}`);
+      console.log(`SSL Mode: ${useSelfSigned ? 'Self-signed certificates' : 'Let\'s Encrypt'}`);
+      if (!useSelfSigned) {
+        console.log(`Email: ${email}`);
+        console.log(`Staging: ${staging}`);
+      }
+
+      const app = express();
       app.use(express.json());
 
-      // Map to store transports by session ID
-      const transports = {};
-
-      // Route for handling MCP requests
-      app.post('/mcp', async (req, res) => {
+      // SSE endpoint for Claude MCP Connector
+      app.all('/sse', async (req, res) => {
         try {
-          console.log('Received MCP request:', req.body);
+          console.log(`Received ${req.method} MCP request from Claude`);
           
           // Extract FETCHSERP_API_TOKEN from Authorization header
           const authHeader = req.headers.authorization;
@@ -678,38 +722,19 @@ class FetchSERPServer {
           const token = authHeader.substring(7); // Remove 'Bearer ' prefix
           this.currentToken = token; // Set token for this request
 
-          // Check for existing session ID
-          const sessionId = req.headers['mcp-session-id'];
-          let transport;
+          // Create transport for Claude MCP Connector
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => Math.random().toString(36).substring(2, 15),
+            onsessioninitialized: (sessionId) => {
+              console.log(`MCP session initialized with ID: ${sessionId}`);
+            }
+          });
 
-          if (sessionId && transports[sessionId]) {
-            // Reuse existing transport
-            transport = transports[sessionId];
-          } else {
-            // New request - create new transport
-            transport = new StreamableHTTPServerTransport({
-              sessionIdGenerator: () => Math.random().toString(36).substring(2, 15),
-              onsessioninitialized: (sessionId) => {
-                console.log(`Session initialized with ID: ${sessionId}`);
-                transports[sessionId] = transport;
-              }
-            });
+          // Connect the transport to the MCP server
+          await this.server.connect(transport);
 
-            // Set up onclose handler to clean up transport when closed
-            transport.onclose = () => {
-              const sid = transport.sessionId;
-              if (sid && transports[sid]) {
-                console.log(`Transport closed for session ${sid}`);
-                delete transports[sid];
-              }
-            };
-
-            // Connect the transport to the MCP server
-            await this.server.connect(transport);
-          }
-
-          // Handle the request properly
-          await transport.handleRequest(req, res, req.body);
+          // Handle the request - works for both GET (SSE) and POST (Streamable HTTP)
+          await transport.handleRequest(req, res);
         } catch (error) {
           console.error('Error handling MCP request:', error);
           if (!res.headersSent) {
@@ -718,11 +743,114 @@ class FetchSERPServer {
         }
       });
 
-      app.listen(port, () => {
-        console.log(`FetchSERP MCP server listening on http://localhost:${port}`);
+      // Health check endpoint
+      app.get('/health', (req, res) => {
+        res.json({ 
+          status: 'ok', 
+          server: 'fetchserp-mcp-server',
+          version: '1.0.0',
+          transport: 'SSE',
+          protocol: 'https',
+          domain: domain,
+          port: httpsPort,
+          ssl: useSelfSigned ? 'Self-signed certificates' : 'Let\'s Encrypt',
+          endpoint: '/sse (GET) - SSE transport for Claude MCP Connector'
+        });
       });
+
+      // Root endpoint with info
+      app.get('/', (req, res) => {
+        res.json({
+          name: 'FetchSERP MCP Server',
+          version: '1.0.0',
+          description: 'MCP server for FetchSERP API with HTTPS and SSE transport for Claude integration',
+          protocol: 'https',
+          domain: domain,
+          port: httpsPort,
+          endpoints: {
+            sse: `https://${domain}:${httpsPort}/sse - SSE transport for Claude MCP Connector`,
+            health: `https://${domain}:${httpsPort}/health - Health check`
+          },
+          usage: `Connect Claude to https://${domain}:${httpsPort}/sse with your FetchSERP API token`,
+          ssl: useSelfSigned ? 'Self-signed certificates (for development)' : 'Let\'s Encrypt automatic SSL certificates'
+        });
+      });
+
+      try {
+        if (useSelfSigned) {
+          // Use self-signed certificates for local development
+          const { keyFile, certFile } = this.createSelfSignedCerts(domain);
+          
+          const httpsOptions = {
+            key: fs.readFileSync(keyFile),
+            cert: fs.readFileSync(certFile)
+          };
+
+          const httpsServer = https.createServer(httpsOptions, app);
+          
+          httpsServer.listen(httpsPort, () => {
+            console.log(`\n✅ HTTPS server listening on port ${httpsPort}`);
+            console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
+            console.log(`Health check: https://${domain}:${httpsPort}/health`);
+            console.log('Ready for Claude MCP Connector integration\n');
+            console.log('⚠️  Using self-signed certificates - you may need to accept security warnings in your browser');
+          });
+
+        } else {
+          // Use Let's Encrypt for production
+          const greenlock = greenlockExpress.init({
+            packageRoot: process.cwd(),
+            configDir: './greenlock.d',
+            
+            // Let's Encrypt settings
+            maintainerEmail: email,
+            staging: staging,
+            
+            cluster: false,
+            
+            // Express app
+            serve: function (glx) {
+              glx.serveApp(app);
+            }
+          });
+
+          // Add the domain
+          await greenlock.manager.defaults({
+            agreeToTerms: true,
+            subscriberEmail: email
+          });
+
+          await greenlock.add({
+            subject: domain,
+            altnames: [domain]
+          });
+
+          console.log(`FetchSERP MCP Server starting with HTTPS on ${domain}:${httpsPort}`);
+          console.log(`SSL: Let's Encrypt (${staging ? 'staging' : 'production'})`);
+          console.log(`Email: ${email}`);
+          console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
+          console.log(`Health check: https://${domain}:${httpsPort}/health`);
+          console.log('Ready for Claude MCP Connector integration\n');
+          
+          // Start the server
+          greenlock.listen(httpsPort, () => {
+            console.log(`✅ HTTPS server listening on port ${httpsPort}`);
+          });
+        }
+        
+      } catch (error) {
+        console.error('Failed to start HTTPS server:', error);
+        if (!useSelfSigned) {
+          console.error('Make sure:');
+          console.error('1. Domain DNS is pointing to this server for Let\'s Encrypt validation');
+          console.error('2. Port 80 and 443 are available for Let\'s Encrypt challenges');
+          console.error('3. Firewall allows incoming connections on these ports');
+          console.error('\nFor local development, try: USE_SELF_SIGNED=true MCP_HTTPS_MODE=true node index.js');
+        }
+        process.exit(1);
+      }
     } else {
-      // Stdio mode (default)
+      // Stdio mode (default) - for Claude Desktop
       const transport = new StdioServerTransport();
       await this.server.connect(transport);
       console.error('FetchSERP MCP server running on stdio');
