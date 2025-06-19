@@ -797,38 +797,29 @@ class FetchSERPServer {
           });
 
         } else {
-          // Use Let's Encrypt for production
-          console.log(`FetchSERP MCP Server starting with HTTPS on ${domain}:${httpsPort}`);
-          console.log(`SSL: Let's Encrypt (${staging ? 'staging' : 'production'})`);
-          console.log(`Email: ${email}`);
-          console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
-          console.log(`Health check: https://${domain}:${httpsPort}/health`);
-          console.log('Ready for Claude MCP Connector integration\n');
-
-          // Create greenlock-express server
-          const server = greenlockExpress.init({
-            packageRoot: process.cwd(),
-            configDir: './greenlock.d',
-            maintainerEmail: email,
-            staging: staging,
-            cluster: false,
-            sites: [{
-              subject: domain,
-              altnames: [domain]
-            }]
-          });
-
-          // Add our express app to greenlock
-          server.serveApp(app);
-
-          // The server will automatically handle port 80 and 443
-          // For custom ports, we need to handle this differently
-          console.log(`✅ Let's Encrypt server initialized`);
-          console.log(`Server will handle HTTP (80) and HTTPS (443) automatically`);
+          // Let's Encrypt mode - currently has compatibility issues
+          console.log(`⚠️  Let's Encrypt mode requested but has compatibility issues`);
+          console.log(`Falling back to self-signed certificates for reliable deployment`);
+          console.log(`For production SSL, consider using a reverse proxy (nginx/cloudflare) instead`);
           
-          if (httpsPort !== 443) {
-            console.log(`⚠️  Note: Custom port ${httpsPort} specified, but Let's Encrypt will use standard ports`);
-          }
+          // Fall back to self-signed certificates
+          const { keyFile, certFile } = this.createSelfSignedCerts(domain);
+          
+          const httpsOptions = {
+            key: fs.readFileSync(keyFile),
+            cert: fs.readFileSync(certFile)
+          };
+
+          const httpsServer = https.createServer(httpsOptions, app);
+          
+          httpsServer.listen(httpsPort, () => {
+            console.log(`\n✅ HTTPS server listening on port ${httpsPort}`);
+            console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
+            console.log(`Health check: https://${domain}:${httpsPort}/health`);
+            console.log('Ready for Claude MCP Connector integration\n');
+            console.log('⚠️  Using self-signed certificates - you may need to accept security warnings');
+            console.log('💡 For production SSL, consider using nginx reverse proxy or Cloudflare');
+          });
         }
         
       } catch (error) {
