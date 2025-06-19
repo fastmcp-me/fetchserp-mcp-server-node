@@ -31,6 +31,26 @@ This MCP server provides access to all FetchSERP API endpoints:
 
 ## Installation
 
+### Option 1: Using npx (No installation required)
+
+No installation needed! You can run the server directly from GitHub using npx. Just configure your MCP client with the npx command as shown in the Configuration section below.
+
+### Option 2: Install via npm
+
+1. Install the package globally:
+```bash
+npm install -g fetchserp-mcp-server
+```
+
+2. **Get your FetchSERP API token**: Sign up at [https://www.fetchserp.com](https://www.fetchserp.com) to get your API token. New users get 250 free credits to get started!
+
+3. Set your FetchSERP API token as an environment variable:
+```bash
+export FETCHSERP_API_TOKEN="your_api_token_here"
+```
+
+### Option 3: Manual Installation
+
 1. Clone or download this repository
 2. Install dependencies:
 ```bash
@@ -51,6 +71,38 @@ export FETCHSERP_API_TOKEN="your_api_token_here"
 
 Add this server to your MCP client configuration. For example, in Claude Desktop:
 
+**Option 1: Using npx with GitHub (Recommended for latest version):**
+```json
+{
+  "mcpServers": {
+    "fetchserp": {
+      "command": "npx",
+      "args": [
+        "github:fetchSERP/fetchserp-mcp-server-node"
+      ],
+      "env": {
+        "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
+      }
+    }
+  }
+}
+```
+
+**Option 2: If installed via npm:**
+```json
+{
+  "mcpServers": {
+    "fetchserp": {
+      "command": "fetchserp-mcp-server",
+      "env": {
+        "FETCHSERP_API_TOKEN": "your_api_token_here"
+      }
+    }
+  }
+}
+```
+
+**Option 3: If installed manually:**
 ```json
 {
   "mcpServers": {

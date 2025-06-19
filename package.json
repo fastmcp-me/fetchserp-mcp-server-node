@@ -1,12 +1,16 @@
 {
   "name": "fetchserp-mcp-server",
   "version": "1.0.0",
-  "description": "MCP Server for FetchSERP API",
+  "description": "A Model Context Protocol (MCP) server that provides access to FetchSERP API for SEO analysis, SERP data, web scraping, and keyword research",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "fetchserp-mcp-server": "./index.js"
+  },
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -17,11 +21,34 @@
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "fetchserp",
     "seo",
     "serp",
-    "api"
+    "search-engine",
+    "web-scraping",
+    "keyword-research",
+    "api",
+    "google",
+    "bing",
+    "yahoo",
+    "duckduckgo",
+    "backlinks",
+    "domain-analysis"
   ],
-  "author": "",
-  "license": "MIT"
+  "author": "FetchSERP MCP Server",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fetchserp/fetchserp-mcp-server-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fetchserp/fetchserp-mcp-server-node/issues"
+  },
+  "homepage": "https://github.com/fetchserp/fetchserp-mcp-server-node#readme",
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
 } 
