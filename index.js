@@ -661,9 +661,14 @@ class FetchSERPServer {
 
       app.use(express.json());
 
+      // Map to store transports by session ID
+      const transports = {};
+
       // Route for handling MCP requests
       app.post('/mcp', async (req, res) => {
         try {
+          console.log('Received MCP request:', req.body);
+          
           // Extract FETCHSERP_API_TOKEN from Authorization header
           const authHeader = req.headers.authorization;
           if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -673,11 +678,38 @@ class FetchSERPServer {
           const token = authHeader.substring(7); // Remove 'Bearer ' prefix
           this.currentToken = token; // Set token for this request
 
-          const transport = new StreamableHTTPServerTransport({
-            request: req,
-            response: res,
-          });
-          await this.server.connect(transport);
+          // Check for existing session ID
+          const sessionId = req.headers['mcp-session-id'];
+          let transport;
+
+          if (sessionId && transports[sessionId]) {
+            // Reuse existing transport
+            transport = transports[sessionId];
+          } else {
+            // New request - create new transport
+            transport = new StreamableHTTPServerTransport({
+              sessionIdGenerator: () => Math.random().toString(36).substring(2, 15),
+              onsessioninitialized: (sessionId) => {
+                console.log(`Session initialized with ID: ${sessionId}`);
+                transports[sessionId] = transport;
+              }
+            });
+
+            // Set up onclose handler to clean up transport when closed
+            transport.onclose = () => {
+              const sid = transport.sessionId;
+              if (sid && transports[sid]) {
+                console.log(`Transport closed for session ${sid}`);
+                delete transports[sid];
+              }
+            };
+
+            // Connect the transport to the MCP server
+            await this.server.connect(transport);
+          }
+
+          // Handle the request properly
+          await transport.handleRequest(req, res, req.body);
         } catch (error) {
           console.error('Error handling MCP request:', error);
           if (!res.headersSent) {
