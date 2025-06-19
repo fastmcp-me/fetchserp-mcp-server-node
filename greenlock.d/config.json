@@ -1,0 +1,14 @@
+{
+  "defaults": {
+    "subscriberEmail": "admin@fetchserp.com",
+    "agreeToTerms": true
+  },
+  "sites": [
+    {
+      "subject": "mcp.fetchserp.com",
+      "altnames": [
+        "mcp.fetchserp.com"
+      ]
+    }
+  ]
+}

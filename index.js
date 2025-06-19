@@ -797,29 +797,63 @@ class FetchSERPServer {
           });
 
         } else {
-          // Let's Encrypt mode - currently has compatibility issues
-          console.log(`⚠️  Let's Encrypt mode requested but has compatibility issues`);
-          console.log(`Falling back to self-signed certificates for reliable deployment`);
-          console.log(`For production SSL, consider using a reverse proxy (nginx/cloudflare) instead`);
+          // Let's Encrypt mode with Greenlock Express
+          console.log(`🔒 Setting up Let's Encrypt SSL certificates...`);
+          console.log(`Domain: ${domain}`);
+          console.log(`Email: ${email}`);
+          console.log(`Staging: ${staging}`);
           
-          // Fall back to self-signed certificates
-          const { keyFile, certFile } = this.createSelfSignedCerts(domain);
+          // Create Greenlock config directory and file
+          const configDir = './greenlock.d';
+          const configFile = `${configDir}/config.json`;
           
-          const httpsOptions = {
-            key: fs.readFileSync(keyFile),
-            cert: fs.readFileSync(certFile)
-          };
+          if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true });
+          }
 
-          const httpsServer = https.createServer(httpsOptions, app);
-          
-          httpsServer.listen(httpsPort, () => {
-            console.log(`\n✅ HTTPS server listening on port ${httpsPort}`);
-            console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
-            console.log(`Health check: https://${domain}:${httpsPort}/health`);
-            console.log('Ready for Claude MCP Connector integration\n');
-            console.log('⚠️  Using self-signed certificates - you may need to accept security warnings');
-            console.log('💡 For production SSL, consider using nginx reverse proxy or Cloudflare');
+          // Create basic config if it doesn't exist
+          if (!fs.existsSync(configFile)) {
+            const config = {
+              defaults: {
+                subscriberEmail: email,
+                agreeToTerms: true
+              },
+              sites: [
+                {
+                  subject: domain,
+                  altnames: [domain]
+                }
+              ]
+            };
+            fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+            console.log(`✅ Created Greenlock config at ${configFile}`);
+          }
+
+          // Greenlock Express configuration
+          const greenlockInstance = greenlockExpress.init({
+            packageRoot: process.cwd(),
+            configDir: configDir,
+            maintainerEmail: email,
+            cluster: false,
+            staging: staging,
+            notify: function(event, details) {
+              if ('error' === event) {
+                console.error('Greenlock Error:', details);
+              } else {
+                console.log('Greenlock Event:', event, details?.subject || details?.altnames || '');
+              }
+            }
           });
+
+          // Serve the app with automatic HTTPS
+          greenlockInstance.serve(app);
+          
+          console.log(`\n✅ HTTPS server with Let's Encrypt started`);
+          console.log(`🔒 SSL certificates managed automatically by Let's Encrypt`);
+          console.log(`📍 Listening on ports 80 (HTTP) and 443 (HTTPS)`);
+          console.log(`SSE endpoint: https://${domain}/sse`);
+          console.log(`Health check: https://${domain}/health`);
+          console.log('Ready for Claude MCP Connector integration\n');
         }
         
       } catch (error) {

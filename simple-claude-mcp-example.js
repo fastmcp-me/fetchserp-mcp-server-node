@@ -35,20 +35,19 @@ function log(message, color = colors.reset) {
 }
 
 async function httpRequest(url, options, data) {
+  const urlObj = new URL(url);
+  const client = urlObj.protocol === 'https:' ? https : http;
+
   return new Promise((resolve, reject) => {
-    const urlObj = new URL(url);
-    const isHttps = urlObj.protocol === 'https:';
-    const client = isHttps ? https : http;
-    const defaultPort = isHttps ? 443 : 80;
-    
     const requestOptions = {
       hostname: urlObj.hostname,
-      port: urlObj.port || defaultPort,
+      port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
       path: urlObj.pathname + urlObj.search,
       method: options.method || 'POST',
       headers: options.headers || {},
       // Allow self-signed certificates for localhost and mcp.fetchserp.com testing
-      rejectUnauthorized: !(urlObj.hostname === 'localhost' || urlObj.hostname === 'mcp.fetchserp.com')
+      rejectUnauthorized: !(urlObj.hostname === 'localhost' || urlObj.hostname === 'mcp.fetchserp.com'),
+      timeout: 30000 // 30 second timeout
     };
 
     const req = client.request(requestOptions, (res) => {
@@ -71,6 +70,11 @@ async function httpRequest(url, options, data) {
       reject(error);
     });
 
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request timeout after 30 seconds'));
+    });
+
     if (data) {
       req.write(data);
     }
@@ -83,7 +87,7 @@ async function askClaudeWithMCP(question, mcpServerUrl) {
   log(`\n🤖 Asking Claude: "${question}"`, colors.yellow);
   
   const claudeRequest = {
-    model: "claude-3-5-sonnet-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
     messages: [
       {
@@ -117,6 +121,7 @@ async function askClaudeWithMCP(question, mcpServerUrl) {
 
   if (response.statusCode !== 200) {
     const errorData = JSON.parse(response.data);
+    console.log('Full error response:', JSON.stringify(errorData, null, 2));
     throw new Error(`Claude API error: ${errorData.error?.message || response.data}`);
   }
 
