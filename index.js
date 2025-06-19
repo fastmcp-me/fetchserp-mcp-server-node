@@ -32,6 +32,8 @@ class FetchSERPServer {
   }
 
   setupToolHandlers() {
+    this.currentToken = null; // Store token for current request context
+
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
         tools: [
@@ -500,7 +502,7 @@ class FetchSERPServer {
       const { name, arguments: args } = request.params;
 
       try {
-        const result = await this.handleToolCall(name, args);
+        const result = await this.handleToolCall(name, args, this.currentToken);
         return {
           content: [
             {
@@ -521,12 +523,15 @@ class FetchSERPServer {
     });
   }
 
-  async makeRequest(endpoint, method = 'GET', params = {}, body = null) {
-    const token = process.env.FETCHSERP_API_TOKEN;
-    if (!token) {
+  async makeRequest(endpoint, method = 'GET', params = {}, body = null, token = null) {
+    // For HTTP mode, use the token passed from the request
+    // For stdio mode, use environment variable
+    const fetchserpToken = token || process.env.FETCHSERP_API_TOKEN;
+    
+    if (!fetchserpToken) {
       throw new McpError(
         ErrorCode.InvalidRequest,
-        'FETCHSERP_API_TOKEN environment variable is required'
+        'FETCHSERP_API_TOKEN is required'
       );
     }
 
@@ -548,7 +553,7 @@ class FetchSERPServer {
     const fetchOptions = {
       method,
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${fetchserpToken}`,
         'Content-Type': 'application/json',
       },
     };
@@ -570,72 +575,72 @@ class FetchSERPServer {
     return await response.json();
   }
 
-  async handleToolCall(name, args) {
+  async handleToolCall(name, args, token = null) {
     switch (name) {
       case 'get_backlinks':
-        return await this.makeRequest('/api/v1/backlinks', 'GET', args);
+        return await this.makeRequest('/api/v1/backlinks', 'GET', args, null, token);
 
       case 'get_domain_emails':
-        return await this.makeRequest('/api/v1/domain_emails', 'GET', args);
+        return await this.makeRequest('/api/v1/domain_emails', 'GET', args, null, token);
 
       case 'get_domain_info':
-        return await this.makeRequest('/api/v1/domain_infos', 'GET', args);
+        return await this.makeRequest('/api/v1/domain_infos', 'GET', args, null, token);
 
       case 'get_keywords_search_volume':
-        return await this.makeRequest('/api/v1/keywords_search_volume', 'GET', args);
+        return await this.makeRequest('/api/v1/keywords_search_volume', 'GET', args, null, token);
 
       case 'get_keywords_suggestions':
-        return await this.makeRequest('/api/v1/keywords_suggestions', 'GET', args);
+        return await this.makeRequest('/api/v1/keywords_suggestions', 'GET', args, null, token);
 
       case 'get_long_tail_keywords':
-        return await this.makeRequest('/api/v1/long_tail_keywords_generator', 'GET', args);
+        return await this.makeRequest('/api/v1/long_tail_keywords_generator', 'GET', args, null, token);
 
       case 'get_moz_analysis':
-        return await this.makeRequest('/api/v1/moz', 'GET', args);
+        return await this.makeRequest('/api/v1/moz', 'GET', args, null, token);
 
       case 'check_page_indexation':
-        return await this.makeRequest('/api/v1/page_indexation', 'GET', args);
+        return await this.makeRequest('/api/v1/page_indexation', 'GET', args, null, token);
 
       case 'get_domain_ranking':
-        return await this.makeRequest('/api/v1/ranking', 'GET', args);
+        return await this.makeRequest('/api/v1/ranking', 'GET', args, null, token);
 
       case 'scrape_webpage':
-        return await this.makeRequest('/api/v1/scrape', 'GET', args);
+        return await this.makeRequest('/api/v1/scrape', 'GET', args, null, token);
 
       case 'scrape_domain':
-        return await this.makeRequest('/api/v1/scrape_domain', 'GET', args);
+        return await this.makeRequest('/api/v1/scrape_domain', 'GET', args, null, token);
 
       case 'scrape_webpage_js':
         const { url, js_script, ...jsParams } = args;
-        return await this.makeRequest('/api/v1/scrape_js', 'POST', { url, ...jsParams }, { url, js_script });
+        return await this.makeRequest('/api/v1/scrape_js', 'POST', { url, ...jsParams }, { url, js_script }, token);
 
       case 'scrape_webpage_js_proxy':
         const { url: proxyUrl, country, js_script: proxyScript, ...proxyParams } = args;
-        return await this.makeRequest('/api/v1/scrape_js_with_proxy', 'POST', { url: proxyUrl, country, ...proxyParams }, { url: proxyUrl, js_script: proxyScript });
+        return await this.makeRequest('/api/v1/scrape_js_with_proxy', 'POST', { url: proxyUrl, country, ...proxyParams }, { url: proxyUrl, js_script: proxyScript }, token);
 
       case 'get_serp_results':
-        return await this.makeRequest('/api/v1/serp', 'GET', args);
+        return await this.makeRequest('/api/v1/serp', 'GET', args, null, token);
 
       case 'get_serp_html':
-        return await this.makeRequest('/api/v1/serp_html', 'GET', args);
+        return await this.makeRequest('/api/v1/serp_html', 'GET', args, null, token);
 
       case 'get_serp_js_start':
-        return await this.makeRequest('/api/v1/serp_js', 'GET', args);
+        return await this.makeRequest('/api/v1/serp_js', 'GET', args, null, token);
 
       case 'get_serp_js_result':
-        return await this.makeRequest(`/api/v1/serp_js/${args.uuid}`, 'GET', {});
+        return await this.makeRequest(`/api/v1/serp_js/${args.uuid}`, 'GET', {}, null, token);
 
       case 'get_serp_text':
-        return await this.makeRequest('/api/v1/serp_text', 'GET', args);
+        return await this.makeRequest('/api/v1/serp_text', 'GET', args, null, token);
 
       case 'get_user_info':
-        return await this.makeRequest('/api/v1/user', 'GET', {});
+        return await this.makeRequest('/api/v1/user', 'GET', {}, null, token);
 
       case 'get_webpage_ai_analysis':
-        return await this.makeRequest('/api/v1/web_page_ai_analysis', 'GET', args);
+        return await this.makeRequest('/api/v1/web_page_ai_analysis', 'GET', args, null, token);
 
       case 'get_webpage_seo_analysis':
-        return await this.makeRequest('/api/v1/web_page_seo_analysis', 'GET', args);
+        return await this.makeRequest('/api/v1/web_page_seo_analysis', 'GET', args, null, token);
 
       default:
         throw new McpError(
@@ -653,26 +658,21 @@ class FetchSERPServer {
       // HTTP mode with Express
       const app = express();
       const port = process.env.PORT || 8000;
-      const fetchserpToken = process.env.FETCHSERP_API_TOKEN;
-
-      if (!fetchserpToken) {
-        throw new Error('FETCHSERP_API_TOKEN environment variable is required');
-      }
 
       app.use(express.json());
-
-      // Auth middleware - use FETCHSERP_API_TOKEN for authentication
-      app.use('/mcp', (req, res, next) => {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || authHeader !== `Bearer ${fetchserpToken}`) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-        next();
-      });
 
       // Route for handling MCP requests
       app.post('/mcp', async (req, res) => {
         try {
+          // Extract FETCHSERP_API_TOKEN from Authorization header
+          const authHeader = req.headers.authorization;
+          if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized - Bearer token required' });
+          }
+
+          const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+          this.currentToken = token; // Set token for this request
+
           const transport = new StreamableHTTPServerTransport({
             request: req,
             response: res,

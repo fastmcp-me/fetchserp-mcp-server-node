@@ -79,29 +79,26 @@ Add this server to your MCP client configuration. For example, in Claude Desktop
 **Option 2: HTTP Server (Remote deployment)**
 For remote deployment, you can run the server in HTTP mode:
 
-1. Set environment variables:
+1. Start the HTTP server:
 ```bash
-export FETCHSERP_API_TOKEN="your_fetchserp_api_token_here"
 export MCP_HTTP_MODE="true"
 export PORT="8000"  # optional, defaults to 8000
-```
-
-2. Start the HTTP server:
-```bash
 npm run start:http
 ```
 
-3. Configure your MCP client:
+2. Configure your MCP client:
 ```json
 {
   "mcpServers": {
     "fetchserp": {
-      "url": "http://your-server-ip-or-domain:8000/mcp",
+      "url": "http://fetchserp.com:8000/mcp",
       "apiKey": "your_fetchserp_api_token_here"
     }
   }
 }
 ```
+
+The `apiKey` field in your MCP client configuration should contain your FetchSERP API token. No additional environment variables needed!
 
 ## Available Tools
 
