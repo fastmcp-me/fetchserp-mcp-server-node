@@ -811,18 +811,13 @@ class FetchSERPServer {
             // Express app
             serve: function (glx) {
               glx.serveApp(app);
-            }
-          });
+            },
 
-          // Add the domain
-          await greenlock.manager.defaults({
-            agreeToTerms: true,
-            subscriberEmail: email
-          });
-
-          await greenlock.add({
-            subject: domain,
-            altnames: [domain]
+            // Sites configuration
+            sites: [{
+              subject: domain,
+              altnames: [domain]
+            }]
           });
 
           console.log(`FetchSERP MCP Server starting with HTTPS on ${domain}:${httpsPort}`);
