@@ -798,39 +798,37 @@ class FetchSERPServer {
 
         } else {
           // Use Let's Encrypt for production
-          const greenlock = greenlockExpress.init({
-            packageRoot: process.cwd(),
-            configDir: './greenlock.d',
-            
-            // Let's Encrypt settings
-            maintainerEmail: email,
-            staging: staging,
-            
-            cluster: false,
-            
-            // Express app
-            serve: function (glx) {
-              glx.serveApp(app);
-            },
-
-            // Sites configuration
-            sites: [{
-              subject: domain,
-              altnames: [domain]
-            }]
-          });
-
           console.log(`FetchSERP MCP Server starting with HTTPS on ${domain}:${httpsPort}`);
           console.log(`SSL: Let's Encrypt (${staging ? 'staging' : 'production'})`);
           console.log(`Email: ${email}`);
           console.log(`SSE endpoint: https://${domain}:${httpsPort}/sse`);
           console.log(`Health check: https://${domain}:${httpsPort}/health`);
           console.log('Ready for Claude MCP Connector integration\n');
-          
-          // Start the server
-          greenlock.listen(httpsPort, () => {
-            console.log(`✅ HTTPS server listening on port ${httpsPort}`);
+
+          // Create greenlock-express server
+          const server = greenlockExpress.init({
+            packageRoot: process.cwd(),
+            configDir: './greenlock.d',
+            maintainerEmail: email,
+            staging: staging,
+            cluster: false,
+            sites: [{
+              subject: domain,
+              altnames: [domain]
+            }]
           });
+
+          // Add our express app to greenlock
+          server.serveApp(app);
+
+          // The server will automatically handle port 80 and 443
+          // For custom ports, we need to handle this differently
+          console.log(`✅ Let's Encrypt server initialized`);
+          console.log(`Server will handle HTTP (80) and HTTPS (443) automatically`);
+          
+          if (httpsPort !== 443) {
+            console.log(`⚠️  Note: Custom port ${httpsPort} specified, but Let's Encrypt will use standard ports`);
+          }
         }
         
       } catch (error) {
