@@ -2,6 +2,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -9,6 +10,7 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import fetch from 'node-fetch';
+import express from 'express';
 
 const API_BASE_URL = 'https://www.fetchserp.com';
 
@@ -644,9 +646,55 @@ class FetchSERPServer {
   }
 
   async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('FetchSERP MCP server running on stdio');
+    // Check if we should run as HTTP server or stdio
+    const useHttp = process.env.MCP_HTTP_MODE === 'true';
+    
+    if (useHttp) {
+      // HTTP mode with Express
+      const app = express();
+      const port = process.env.PORT || 8000;
+      const fetchserpToken = process.env.FETCHSERP_API_TOKEN;
+
+      if (!fetchserpToken) {
+        throw new Error('FETCHSERP_API_TOKEN environment variable is required');
+      }
+
+      app.use(express.json());
+
+      // Auth middleware - use FETCHSERP_API_TOKEN for authentication
+      app.use('/mcp', (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || authHeader !== `Bearer ${fetchserpToken}`) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        next();
+      });
+
+      // Route for handling MCP requests
+      app.post('/mcp', async (req, res) => {
+        try {
+          const transport = new StreamableHTTPServerTransport({
+            request: req,
+            response: res,
+          });
+          await this.server.connect(transport);
+        } catch (error) {
+          console.error('Error handling MCP request:', error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Internal server error' });
+          }
+        }
+      });
+
+      app.listen(port, () => {
+        console.log(`FetchSERP MCP server listening on http://localhost:${port}`);
+      });
+    } else {
+      // Stdio mode (default)
+      const transport = new StdioServerTransport();
+      await this.server.connect(transport);
+      console.error('FetchSERP MCP server running on stdio');
+    }
   }
 }
 

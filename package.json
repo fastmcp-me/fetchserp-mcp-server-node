@@ -1,7 +1,7 @@
 {
   "name": "fetchserp-mcp-server",
   "version": "1.0.0",
-  "description": "A Model Context Protocol (MCP) server that provides access to FetchSERP API for SEO analysis, SERP data, web scraping, and keyword research",
+  "description": "A Model Context Protocol (MCP) server that provides access to FetchSERP API for SEO analysis, SERP data, web scraping, and keyword research. Supports both stdio and HTTP transport modes.",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -9,11 +9,14 @@
   },
   "scripts": {
     "start": "node index.js",
+    "start:http": "MCP_HTTP_MODE=true node index.js",
     "dev": "node --watch index.js",
+    "dev:http": "MCP_HTTP_MODE=true node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.21.2",
     "node-fetch": "^3.3.2"
   },
   "engines": {
@@ -51,4 +54,4 @@
     "README.md",
     "LICENSE"
   ]
-} 
+}

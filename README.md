@@ -37,8 +37,27 @@ This MCP server provides access to all FetchSERP API endpoints:
 
 ## Usage
 
+### Transport Modes
+
+This MCP server supports two transport modes:
+
+**npx mode (Option 1)**:
+- ✅ Zero installation required
+- ✅ Always gets latest version from GitHub
+- ✅ Perfect for individual users
+- ✅ Runs locally with Claude Desktop
+
+**HTTP mode (Option 2)**:
+- ✅ Remote deployment capability
+- ✅ Multiple clients can connect
+- ✅ Better for enterprise/team environments
+- ✅ Centralized server management
+- ✅ Single API key authentication (FetchSERP token)
+- ✅ Scalable architecture
+
 ### Configuration
 
+**Option 1: Using npx (Local/Remote GitHub)**
 Add this server to your MCP client configuration. For example, in Claude Desktop:
 
 ```json
@@ -52,6 +71,33 @@ Add this server to your MCP client configuration. For example, in Claude Desktop
       "env": {
         "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
       }
+    }
+  }
+}
+```
+
+**Option 2: HTTP Server (Remote deployment)**
+For remote deployment, you can run the server in HTTP mode:
+
+1. Set environment variables:
+```bash
+export FETCHSERP_API_TOKEN="your_fetchserp_api_token_here"
+export MCP_HTTP_MODE="true"
+export PORT="8000"  # optional, defaults to 8000
+```
+
+2. Start the HTTP server:
+```bash
+npm run start:http
+```
+
+3. Configure your MCP client:
+```json
+{
+  "mcpServers": {
+    "fetchserp": {
+      "url": "http://your-server-ip-or-domain:8000/mcp",
+      "apiKey": "your_fetchserp_api_token_here"
     }
   }
 }
