@@ -17,7 +17,7 @@ import http from 'http';
 // Configuration
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const FETCHSERP_API_TOKEN = process.env.FETCHSERP_API_TOKEN;
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://mcp.fetchserp.com:8000/sse';
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://guinea-dominant-jolly.ngrok-free.app/sse';
 
 // Colors for output
 const colors = {

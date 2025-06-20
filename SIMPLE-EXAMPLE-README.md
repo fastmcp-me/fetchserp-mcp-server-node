@@ -19,7 +19,7 @@ Copy the HTTPS URL (e.g., `https://abc123.ngrok-free.app`)
 ```bash
 CLAUDE_API_KEY=your_claude_api_key \
 FETCHSERP_API_TOKEN=your_fetchserp_token \
-MCP_SERVER_URL=https://your-ngrok-url.ngrok-free.app/sse \
+MCP_SERVER_URL=https://guinea-dominant-jolly.ngrok-free.app/sse \
 node simple-claude-mcp-example.js
 ```
 

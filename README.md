@@ -93,7 +93,7 @@ const claudeRequest = {
   mcp_servers: [
     {
       type: "url",
-      url: "https://mcp.fetchserp.com/sse,
+      url: "https://guinea-dominant-jolly.ngrok-free.app/sse,
       name: "fetchserp",
       authorization_token: FETCHSERP_API_TOKEN,
       tool_configuration: {
@@ -112,6 +112,11 @@ const response = await httpRequest('https://api.anthropic.com/v1/messages', {
     'content-type': 'application/json'
   }
 }, JSON.stringify(claudeRequest));
+```
+
+## To start tunneling
+```
+nohup ngrok http 8000 --domain guinea-dominant-jolly.ngrok-free.app > /var/log/ngrok.log 2>&1 &
 ```
 
 ## Available Tools
