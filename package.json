@@ -51,6 +51,9 @@
     "url": "https://github.com/fetchserp/fetchserp-mcp-server-node/issues"
   },
   "homepage": "https://github.com/fetchserp/fetchserp-mcp-server-node#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "files": [
     "index.js",
     "README.md",

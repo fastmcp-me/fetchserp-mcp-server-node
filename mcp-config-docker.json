@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "fetchserp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "FETCHSERP_API_TOKEN",
+        "ghcr.io/fetchserp/fetchserp-mcp-server-node:latest"
+      ],
+      "env": {
+        "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
+      }
+    }
+  }
+} 

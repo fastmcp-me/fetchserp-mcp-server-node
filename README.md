@@ -117,7 +117,7 @@ const response = await httpRequest('https://api.anthropic.com/v1/messages', {
 **Option 3: OpenAI API with MCP Server**
 For programmatic usage with OpenAI's API and your deployed MCP server:
 
-```
+```javascript
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const res = await openai.responses.create({
@@ -136,7 +136,54 @@ const res = await openai.responses.create({
 });
 
 console.log(res.choices[0].message);
+```
 
+**Option 4: Docker**
+Use the pre-built Docker image from GitHub Container Registry for containerized deployment:
+
+```json
+{
+  "mcpServers": {
+    "fetchserp": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "FETCHSERP_API_TOKEN",
+        "ghcr.io/fetchserp/fetchserp-mcp-server-node:latest"
+      ],
+      "env": {
+        "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
+      }
+    }
+  }
+}
+```
+
+**Docker Features:**
+- ✅ Containerized deployment
+- ✅ Cross-platform compatibility (ARM64 & AMD64)
+- ✅ Isolated environment
+- ✅ Easy scaling and deployment
+- ✅ Automated builds from GitHub
+
+**Manual Docker Usage:**
+```bash
+# Pull the latest image
+docker pull ghcr.io/fetchserp/fetchserp-mcp-server-node:latest
+
+# Run with environment variable
+docker run -i --rm \
+  -e FETCHSERP_API_TOKEN="your_token_here" \
+  ghcr.io/fetchserp/fetchserp-mcp-server-node:latest
+
+# Or run in HTTP mode on port 8000
+docker run -p 8000:8000 \
+  -e FETCHSERP_API_TOKEN="your_token_here" \
+  -e MCP_HTTP_MODE=true \
+  ghcr.io/fetchserp/fetchserp-mcp-server-node:latest
 ```
 
 ## Available Tools
