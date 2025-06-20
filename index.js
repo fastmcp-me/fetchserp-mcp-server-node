@@ -524,8 +524,7 @@ class FetchSERPServer {
   }
 
   async makeRequest(endpoint, method = 'GET', params = {}, body = null, token = null) {
-    // Use the token passed from the request, fallback to environment variable
-    const fetchserpToken = token || process.env.FETCHSERP_API_TOKEN;
+    const fetchserpToken = token;
     
     if (!fetchserpToken) {
       throw new McpError(
