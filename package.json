@@ -20,11 +20,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^0.6.1",
     "express": "^4.21.2",
-    "fs": "^0.0.1-security",
-    "greenlock-express": "^4.0.3",
-    "https": "^1.0.0",
     "node-fetch": "^3.3.2"
   },
   "engines": {
