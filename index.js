@@ -524,7 +524,7 @@ class FetchSERPServer {
   }
 
   async makeRequest(endpoint, method = 'GET', params = {}, body = null, token = null) {
-    const fetchserpToken = token;
+    const fetchserpToken = token || process.env.FETCHSERP_API_TOKEN;
     
     if (!fetchserpToken) {
       throw new McpError(
