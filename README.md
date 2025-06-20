@@ -244,17 +244,11 @@ The server includes comprehensive error handling:
 - Input validation
 - Proper MCP error responses
 
-## Requirements
 
-- Node.js 18+
-- FetchSERP API token
-- Internet connection
+# Docker deploy
 
-## License
+```
+docker build --platform=linux/amd64 -t olivier86/fetchserp-mcp-server-node:latest --push .
 
-MIT License
-
-## Support
-
-For API-related questions, contact FetchSERP at contact@fetchserp.com
-For MCP server issues, please create an issue in this repository. 
+docker run -p 8000:8000 olivier86/fetchserp-mcp-server-node:latest
+```
