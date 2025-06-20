@@ -114,11 +114,6 @@ const response = await httpRequest('https://api.anthropic.com/v1/messages', {
 }, JSON.stringify(claudeRequest));
 ```
 
-## To start tunneling
-```
-nohup ngrok http 8000 --domain guinea-dominant-jolly.ngrok-free.app > /var/log/ngrok.log 2>&1 &
-```
-
 ## Available Tools
 
 ### Domain & SEO Analysis
@@ -264,10 +259,15 @@ The server includes comprehensive error handling:
 - Proper MCP error responses
 
 
-# Docker deploy
+## Docker deploy
 
 ```
 docker build --platform=linux/amd64 -t olivier86/fetchserp-mcp-server-node:latest --push .
 
 docker run -p 8000:8000 olivier86/fetchserp-mcp-server-node:latest
+```
+
+## To start tunneling
+```
+nohup ngrok http 8000 --domain guinea-dominant-jolly.ngrok-free.app > /var/log/ngrok.log 2>&1 &
 ```
