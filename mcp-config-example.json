@@ -1,11 +1,11 @@
 {
   "mcpServers": {
     "fetchserp": {
-      "command": "node",
-      "args": ["/Users/you/Desktop/fetchserp-mcp-server-node/index.js"],
+      "command": "npx",
+      "args": ["github:fetchSERP/fetchserp-mcp-server-node"],
       "env": {
         "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
       }
     }
   }
-} 
+}

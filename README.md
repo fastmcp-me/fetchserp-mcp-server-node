@@ -93,7 +93,7 @@ const claudeRequest = {
   mcp_servers: [
     {
       type: "url",
-      url: "https://guinea-dominant-jolly.ngrok-free.app/sse,
+      url: "https://mcp.fetchserp.com/sse",
       name: "fetchserp",
       authorization_token: FETCHSERP_API_TOKEN,
       tool_configuration: {
@@ -112,6 +112,31 @@ const response = await httpRequest('https://api.anthropic.com/v1/messages', {
     'content-type': 'application/json'
   }
 }, JSON.stringify(claudeRequest));
+```
+
+**Option 3: OpenAI API with MCP Server**
+For programmatic usage with OpenAI's API and your deployed MCP server:
+
+```
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const res = await openai.responses.create({
+  model: "gpt-4.1",
+  tools: [
+    {
+      type: "mcp",
+      server_label: "fetchserp",
+      server_url: "https://mcp.fetchserp.com/sse",
+      headers: {
+        Authorization: `Bearer ${FETCHSERP_API_TOKEN}`
+      }
+    }
+  ],
+  input: question
+});
+
+console.log(res.choices[0].message);
+
 ```
 
 ## Available Tools
