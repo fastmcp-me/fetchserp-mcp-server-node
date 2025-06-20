@@ -167,28 +167,6 @@ async function runExample() {
     const mcpServerUrl = MCP_SERVER_URL;
     log(`\n🔗 MCP Server: ${mcpServerUrl}`, colors.blue);
 
-    // Test the MCP server health endpoint first
-    const healthUrl = mcpServerUrl.replace('/sse', '/health');
-    log(`\n🏥 Testing server health: ${healthUrl}`, colors.cyan);
-    
-    try {
-      const healthResponse = await httpRequest(healthUrl, { method: 'GET' });
-      if (healthResponse.statusCode === 200) {
-        const healthData = JSON.parse(healthResponse.data);
-        log(`   ✅ Server Status: ${healthData.status}`, colors.green);
-        log(`   ✅ Server: ${healthData.server} v${healthData.version}`, colors.green);
-        log(`   ✅ Protocol: ${healthData.protocol}`, colors.green);
-        log(`   ✅ Domain: ${healthData.domain}:${healthData.port}`, colors.green);
-        log(`   ✅ Transport: ${healthData.transport}`, colors.green);
-      } else {
-        throw new Error(`Health check failed: ${healthResponse.statusCode}`);
-      }
-    } catch (error) {
-      log(`   ❌ Health check failed: ${error.message}`, colors.red);
-      log(`   💡 Make sure HTTPS MCP server is running: MCP_HTTPS_MODE=true node index.js`, colors.yellow);
-      throw error;
-    }
-
     // Simple question that requires search data
     const question = "Who is ranking 3rd on Google for the keyword 'serp api'? Please use your search tools to get current results.";
     

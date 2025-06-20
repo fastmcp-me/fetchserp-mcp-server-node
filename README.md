@@ -76,29 +76,43 @@ Add this server to your MCP client configuration. For example, in Claude Desktop
 }
 ```
 
-**Option 2: HTTP Server (Remote deployment)**
-For remote deployment, you can run the server in HTTP mode:
+**Option 2: Claude API with MCP Server**
+For programmatic usage with Claude's API and your deployed MCP server:
 
-1. Start the HTTP server:
-```bash
-export MCP_HTTP_MODE="true"
-export PORT="8000"  # optional, defaults to 8000
-npm run start:http
-```
-
-2. Configure your MCP client:
-```json
-{
-  "mcpServers": {
-    "fetchserp": {
-      "url": "http://fetchserp.com:8000/mcp",
-      "apiKey": "your_fetchserp_api_token_here"
+```javascript
+const claudeRequest = {
+  model: "claude-sonnet-4-20250514",
+  max_tokens: 1024,
+  messages: [
+    {
+      role: "user", 
+      content: question
     }
-  }
-}
-```
+  ],
+  // MCP Server Configuration
+  mcp_servers: [
+    {
+      type: "url",
+      url: "https://mcp.fetchserp.com/sse,
+      name: "fetchserp",
+      authorization_token: FETCHSERP_API_TOKEN,
+      tool_configuration: {
+        enabled: true
+      }
+    }
+  ]
+};
 
-The `apiKey` field in your MCP client configuration should contain your FetchSERP API token. No additional environment variables needed!
+const response = await httpRequest('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: {
+    'x-api-key': CLAUDE_API_KEY,
+    'anthropic-version': '2023-06-01',
+    'anthropic-beta': 'mcp-client-2025-04-04',
+    'content-type': 'application/json'
+  }
+}, JSON.stringify(claudeRequest));
+```
 
 ## Available Tools
 
