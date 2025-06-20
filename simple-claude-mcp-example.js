@@ -11,8 +11,12 @@
  * Usage: node simple-claude-mcp-example.js
  */
 
+import * as dotenv from "dotenv";
 import https from 'https';
 import http from 'http';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Configuration
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;

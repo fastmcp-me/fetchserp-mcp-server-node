@@ -9,9 +9,12 @@ Get up and running with FetchSERP MCP in under 2 minutes! Choose your AI provide
 Run a local MCP server with Claude:
 
 ```bash
-CLAUDE_API_KEY=your_claude_api_key \
-FETCHSERP_API_TOKEN=your_fetchserp_token \
-MCP_SERVER_URL=https://mcp.fetchserp.com/sse \
+# Create .env file first:
+echo "CLAUDE_API_KEY=your_claude_api_key" > .env
+echo "FETCHSERP_API_TOKEN=your_fetchserp_token" > .env
+echo "MCP_SERVER_URL=https://mcp.fetchserp.com/sse" > .env
+
+# Run the example:
 node simple-claude-mcp-example.js
 ```
 
