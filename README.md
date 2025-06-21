@@ -58,7 +58,7 @@ This MCP server supports two transport modes:
 ### Configuration
 
 **Option 1: Using npx (Local/Remote GitHub)**
-Add this server to your MCP client configuration. For example, in Claude Desktop:
+Add this server to your MCP client configuration. For example, in Claude Desktop using github registry :
 
 ```json
 {
@@ -68,6 +68,22 @@ Add this server to your MCP client configuration. For example, in Claude Desktop
       "args": [
         "github:fetchSERP/fetchserp-mcp-server-node"
       ],
+      "env": {
+        "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
+      }
+    }
+  }
+}
+```
+
+or using npm registry
+
+```json
+{
+  "mcpServers": {
+    "fetchserp": {
+      "command": "npx",
+      "args": ["fetchserp-mcp-server"],
       "env": {
         "FETCHSERP_API_TOKEN": "your_fetchserp_api_token_here"
       }
