@@ -21,7 +21,7 @@ dotenv.config();
 // Configuration
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const FETCHSERP_API_TOKEN = process.env.FETCHSERP_API_TOKEN;
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://mcp.fetchserp.com/sse';
+const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'https://www.fetchserp.com/mcp';
 
 // Colors for output
 const colors = {
@@ -51,7 +51,7 @@ async function httpRequest(url, options, data) {
       headers: options.headers || {},
       // Allow self-signed certificates for localhost and mcp.fetchserp.com testing
       rejectUnauthorized: !(urlObj.hostname === 'localhost' || urlObj.hostname === 'mcp.fetchserp.com'),
-      timeout: 30000 // 30 second timeout
+      timeout: 60000 // 30 second timeout
     };
 
     const req = client.request(requestOptions, (res) => {
@@ -172,7 +172,7 @@ async function runExample() {
     log(`\n🔗 MCP Server: ${mcpServerUrl}`, colors.blue);
 
     // Simple question that requires search data
-    const question = "Who is ranking 3rd on Google for the keyword 'serp api'? Please use your search tools to get current results.";
+    const question = "get web page seo analysis for fetchserp.com";
     
     // Ask Claude with MCP tools
     log(`\n🤖 Making Claude API request with MCP connector...`, colors.cyan);

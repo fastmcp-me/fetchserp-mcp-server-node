@@ -273,15 +273,12 @@ Get SERP results with HTML content
 Get SERP results with text content
 - Same parameters as `get_serp_results`
 
-#### `get_serp_js_start`
-Start AI Overview SERP job (returns UUID)
+#### `get_serp_ai_mode`
+Get SERP with AI Overview and AI Mode response
 - **query** (required): Search query
 - **country**: Country code (default: us)
-- **pages_number**: Pages to search 1-10 (default: 1)
 
-#### `get_serp_js_result`
-Get AI Overview SERP results
-- **uuid** (required): UUID from start job
+*Returns AI overview and AI mode response for the query. Less reliable than the 2-step process but returns results in under 30 seconds.*
 
 #### `check_page_indexation`
 Check if domain is indexed for keyword

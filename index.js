@@ -19,7 +19,7 @@ class FetchSERPServer {
     this.server = new Server(
       {
         name: 'fetchserp-mcp-server',
-        version: '1.0.0',
+        version: '1.0.2',
       },
       {
         capabilities: {
@@ -384,8 +384,8 @@ class FetchSERPServer {
             },
           },
           {
-            name: 'get_serp_js_start',
-            description: 'Start SERP with AI Overview job (step 1) - returns UUID for polling',
+            name: 'get_serp_ai_mode',
+            description: 'Get SERP with AI Overview and AI Mode response. Returns AI overview and AI mode response for the query. Less reliable than the 2-step process but returns results in under 30 seconds.',
             inputSchema: {
               type: 'object',
               properties: {
@@ -398,29 +398,8 @@ class FetchSERPServer {
                   description: 'The country to search from. Default: us',
                   default: 'us',
                 },
-                pages_number: {
-                  type: 'integer',
-                  description: 'The number of pages to search (1-10). Default: 1',
-                  default: 1,
-                  minimum: 1,
-                  maximum: 10,
-                },
               },
               required: ['query'],
-            },
-          },
-          {
-            name: 'get_serp_js_result',
-            description: 'Get SERP with AI Overview results (step 2) using UUID from step 1',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                uuid: {
-                  type: 'string',
-                  description: 'The UUID returned by the SERP JS start endpoint',
-                },
-              },
-              required: ['uuid'],
             },
           },
           {
@@ -622,11 +601,8 @@ class FetchSERPServer {
       case 'get_serp_html':
         return await this.makeRequest('/api/v1/serp_html', 'GET', args, null, token);
 
-      case 'get_serp_js_start':
-        return await this.makeRequest('/api/v1/serp_js', 'GET', args, null, token);
-
-      case 'get_serp_js_result':
-        return await this.makeRequest(`/api/v1/serp_js/${args.uuid}`, 'GET', {}, null, token);
+      case 'get_serp_ai_mode':
+        return await this.makeRequest('/api/v1/serp_ai_mode', 'GET', args, null, token);
 
       case 'get_serp_text':
         return await this.makeRequest('/api/v1/serp_text', 'GET', args, null, token);
@@ -735,7 +711,7 @@ class FetchSERPServer {
         res.json({ 
           status: 'ok', 
           server: 'fetchserp-mcp-server',
-          version: '1.0.0',
+          version: '1.0.2',
           transport: 'StreamableHTTP',
           protocol: 'http',
           port: port,
@@ -748,7 +724,7 @@ class FetchSERPServer {
       app.get('/', (req, res) => {
         res.json({
           name: 'FetchSERP MCP Server',
-          version: '1.0.0',
+          version: '1.0.2',
           description: 'MCP server for FetchSERP API with HTTP transport for ngrok tunneling',
           protocol: 'http',
           port: port,
