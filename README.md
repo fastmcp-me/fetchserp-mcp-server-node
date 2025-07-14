@@ -363,3 +363,6 @@ docker run -p 8000:8000 olivier86/fetchserp-mcp-server-node:latest
 ```
 nohup ngrok http 8000 --domain guinea-dominant-jolly.ngrok-free.app > /var/log/ngrok.log 2>&1 &
 ```
+
+npm login
+npm publish --access public
