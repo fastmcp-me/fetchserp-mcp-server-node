@@ -224,6 +224,12 @@ Extract emails from a domain
 - **country**: Country code (default: us)
 - **pages_number**: Pages to search 1-30 (default: 1)
 
+#### `get_playwright_mcp`
+Use GPT-4.1 to remote control a browser via a Playwright MCP server
+- **prompt** (required): The prompt to use for remote control of the browser
+
+*This endpoint uses GPT-4.1 to remote control a browser via a Playwright MCP server.*
+
 #### `get_webpage_seo_analysis`
 Comprehensive SEO analysis of a webpage
 - **url** (required): URL to analyze
@@ -348,6 +354,7 @@ The server includes comprehensive error handling:
 
 ```
 docker build --platform=linux/amd64 -t olivier86/fetchserp-mcp-server-node:latest --push .
+docker build --platform=linux/amd64 -t ghcr.io/fetchserp/mcp-server-node:latest --push .
 
 docker run -p 8000:8000 olivier86/fetchserp-mcp-server-node:latest
 ```

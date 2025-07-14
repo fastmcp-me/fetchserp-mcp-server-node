@@ -19,7 +19,7 @@ class FetchSERPServer {
     this.server = new Server(
       {
         name: 'fetchserp-mcp-server',
-        version: '1.0.2',
+        version: '1.0.4',
       },
       {
         capabilities: {
@@ -460,6 +460,20 @@ class FetchSERPServer {
             },
           },
           {
+            name: 'get_playwright_mcp',
+            description: 'Use GPT-4.1 to remote control a browser via a Playwright MCP server',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                prompt: {
+                  type: 'string',
+                  description: 'The prompt to use for remote control of the browser',
+                },
+              },
+              required: ['prompt'],
+            },
+          },
+          {
             name: 'get_webpage_seo_analysis',
             description: 'Get SEO analysis for a given url',
             inputSchema: {
@@ -612,6 +626,9 @@ class FetchSERPServer {
 
       case 'get_webpage_ai_analysis':
         return await this.makeRequest('/api/v1/web_page_ai_analysis', 'GET', args, null, token);
+
+      case 'get_playwright_mcp':
+        return await this.makeRequest('/api/v1/playwright_mcp', 'GET', args, null, token);
 
       case 'get_webpage_seo_analysis':
         return await this.makeRequest('/api/v1/web_page_seo_analysis', 'GET', args, null, token);
