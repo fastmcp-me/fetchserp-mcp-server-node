@@ -19,7 +19,7 @@ class FetchSERPServer {
     this.server = new Server(
       {
         name: 'fetchserp-mcp-server',
-        version: '1.0.4',
+        version: '1.0.5',
       },
       {
         capabilities: {
@@ -460,6 +460,52 @@ class FetchSERPServer {
             },
           },
           {
+            name: 'generate_wordpress_content',
+            description: 'Generate WordPress content using AI with customizable prompts and models',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                user_prompt: {
+                  type: 'string',
+                  description: 'The user prompt',
+                },
+                system_prompt: {
+                  type: 'string',
+                  description: 'The system prompt',
+                },
+                ai_model: {
+                  type: 'string',
+                  description: 'The AI model (default: gpt-4.1-nano)',
+                  default: 'gpt-4.1-nano',
+                },
+              },
+              required: ['user_prompt', 'system_prompt'],
+            },
+          },
+          {
+            name: 'generate_social_content',
+            description: 'Generate social media content using AI with customizable prompts and models',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                user_prompt: {
+                  type: 'string',
+                  description: 'The user prompt',
+                },
+                system_prompt: {
+                  type: 'string',
+                  description: 'The system prompt',
+                },
+                ai_model: {
+                  type: 'string',
+                  description: 'The AI model (default: gpt-4.1-nano)',
+                  default: 'gpt-4.1-nano',
+                },
+              },
+              required: ['user_prompt', 'system_prompt'],
+            },
+          },
+          {
             name: 'get_playwright_mcp',
             description: 'Use GPT-4.1 to remote control a browser via a Playwright MCP server',
             inputSchema: {
@@ -627,6 +673,12 @@ class FetchSERPServer {
       case 'get_webpage_ai_analysis':
         return await this.makeRequest('/api/v1/web_page_ai_analysis', 'GET', args, null, token);
 
+      case 'generate_wordpress_content':
+        return await this.makeRequest('/api/v1/generate_wordpress_content', 'GET', args, null, token);
+
+      case 'generate_social_content':
+        return await this.makeRequest('/api/v1/generate_social_content', 'GET', args, null, token);
+
       case 'get_playwright_mcp':
         return await this.makeRequest('/api/v1/playwright_mcp', 'GET', args, null, token);
 
@@ -728,7 +780,7 @@ class FetchSERPServer {
         res.json({ 
           status: 'ok', 
           server: 'fetchserp-mcp-server',
-          version: '1.0.2',
+          version: '1.0.5',
           transport: 'StreamableHTTP',
           protocol: 'http',
           port: port,
@@ -741,7 +793,7 @@ class FetchSERPServer {
       app.get('/', (req, res) => {
         res.json({
           name: 'FetchSERP MCP Server',
-          version: '1.0.2',
+          version: '1.0.5',
           description: 'MCP server for FetchSERP API with HTTP transport for ngrok tunneling',
           protocol: 'http',
           port: port,

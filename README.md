@@ -239,6 +239,22 @@ AI-powered webpage analysis
 - **url** (required): URL to analyze
 - **prompt** (required): Analysis prompt
 
+#### `generate_wordpress_content`
+Generate WordPress content using AI with customizable prompts and models
+- **user_prompt** (required): The user prompt
+- **system_prompt** (required): The system prompt  
+- **ai_model**: The AI model (default: gpt-4.1-nano)
+
+*Generates SEO-optimized WordPress content including title and content (800-1500 words) with keyword targeting in the first 100 words.*
+
+#### `generate_social_content`
+Generate social media content using AI with customizable prompts and models
+- **user_prompt** (required): The user prompt
+- **system_prompt** (required): The system prompt
+- **ai_model**: The AI model (default: gpt-4.1-nano)
+
+*Generates engaging social media content optimized for various platforms and audiences.*
+
 #### `get_moz_analysis`
 Get Moz domain authority and metrics
 - **domain** (required): Target domain
